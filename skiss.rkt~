@@ -1,0 +1,15 @@
+#lang racket
+(require racket/mpair)
+
+(define row%
+  (class object%
+    (init-field
+     [name ""]
+     [e1 (mlist)]
+     [e2 ""]
+     [e3 ""]
+     [e4 ""]
+     [e5 ""]
+     [e6 ""]
+     [e7 ""]
+     
