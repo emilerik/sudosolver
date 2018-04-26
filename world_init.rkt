@@ -151,18 +151,4 @@
   (new board%
        [rows all-rows]))
 
-(define (set-board! lst)
-  (define (helper row col values-lst)
-    (cond
-      [(or (> row 9) (null? values-lst))
-       (void)]
-      [(> col 9)
-       (helper (+ row 1) 1 values-lst)]
-      [(= 0 (first values-lst))
-       (helper row (+ col 1) (rest values-lst))]
-      [else
-       (send board set-element! row col (first values-lst))
-       (helper row (+ col 1) (rest values-lst))]))
-  (helper 1 1 lst))
-
        
