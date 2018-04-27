@@ -1,5 +1,5 @@
 #lang racket
-(require "skiss.rkt")
+(require "classes.rkt")
 
 (provide (all-defined-out))
 
