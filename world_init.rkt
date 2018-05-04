@@ -245,6 +245,24 @@
   (new element%
        [next-e e2]))
 
+;;
+(define (make-board)
+  (let
+      ([elems (map (lambda (e) (new element%)) (range 0 81))])
+    (send (first elems) set-next-e! (second elems))
+    (send (list-ref elems 80) set-prev-e! (list-ref elems 79)) 
+    (for-each
+     (lambda (i)
+       (send (list-ref elems i) set-next-e! (list-ref elems (+ i 1)))
+       (send (list-ref elems i) set-prev-e! (list-ref elems (- i 1))))
+     (range 1 80))
+    elems))
+
+(define tmp-b (make-board))
+
+
+
+;;
 
 (define row1
   (new row%
@@ -403,6 +421,7 @@
   (new board%
        [rows all-rows]))
 
+         
 
 
        

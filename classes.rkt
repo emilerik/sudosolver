@@ -9,6 +9,7 @@
      [candidates (list 1 2 3 4 5 6 7 8 9)]
      [prev-e ""]
      [next-e ""]
+     [my-friends ""]
      [user-val #f])
 
     (define/public (empty-cand?)
@@ -48,6 +49,8 @@
 
     (define/public (set-prev-e! e)
       (set! prev-e e))
+    (define/public (set-next-e! e)
+      (set! next-e e))
 
   (super-new)))
 
