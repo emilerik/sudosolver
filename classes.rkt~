@@ -9,10 +9,7 @@
      [candidates (list 1 2 3 4 5 6 7 8 9)]
      [prev-e ""]
      [next-e ""]
-     [row '()]
-     [col '()]
-     [box '()]
-     ;[my-friends (flatten (list row col box))]
+     [my-friends ""]
      [user-val #f])
 
     (define/public (empty-cand?)
@@ -21,59 +18,18 @@
     (define/public (get-value)
       value)
 
-    (define/public (print-value)
-      (printf "~a " value))
-
     (define/public (user-val?)
       user-val)
-
-    (define/public (set-holder! holder type)
-      (case type
-        ['r (set! row holder)]
-        ['c (set! col holder)]
-        ['b (set! box holder)]))
-    
-    (define/public (get-row)
-      row)
-
-    (define/public (get-col)
-      col)
-
-    (define/public (get-box)
-      box)
-
-    (define/public (get-friends)
-      (flatten (list row col box)))
-
-    (define/public (get-friends-values)
-      (map
-       (lambda (e)
-         (send e get-value))
-       (flatten (list row col box))))
 
     (define/public (set-value! val)
       (set! value val))
 
-    (define/public (set-user-e! b)
-      (set! user-val b))
-    
+    (define/public (set-user-e!)
+      (set! user-val #t))
 
     (define/public (reset-candidates!)
       (set! candidates (list 1 2 3 4 5 6 7 8 9)))
 
-    (define/public (update-candidates!)
-      (unless user-val
-        (define (helper rest-of-candidates)
-          (cond
-            [(null? rest-of-candidates)
-             (void)]
-            [(member (car rest-of-candidates) (get-friends-values))
-             (set! candidates (remove (car rest-of-candidates) candidates))
-             (helper (cdr rest-of-candidates))]
-            [else
-             (helper (cdr rest-of-candidates))]))
-        (helper candidates)))
-    
     (define/public (get-pr-e)
       prev-e)
     
@@ -96,7 +52,7 @@
     (define/public (set-next-e! e)
       (set! next-e e))
 
-    (super-new)))
+  (super-new)))
 
 (define row%
   (class object%
@@ -105,7 +61,7 @@
      [elements '()])
           
     (define/public (get-element pos)
-      (list-ref elements (- pos 1)))
+       (list-ref elements (- pos 1)))
 
     (define/public (delete-element-candidate! pos val)
       (send (get-element pos) rm-candidate! val))
@@ -202,9 +158,9 @@
     (define/public (get-board-elements)
       (flatten
        (map
-        (lambda (row)
-          (send row get-row))
-        rows)))
+       (lambda (row)
+         (send row get-row))
+       rows)))
 
     (define/public (set-board! lst)
       (define (helper row col values-lst)
