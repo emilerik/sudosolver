@@ -7,12 +7,12 @@
     (init-field
      [value 0]
      [candidates (list 1 2 3 4 5 6 7 8 9)]
+     [init-candidates (list 1 2 3 4 5 6 7 8 9)]
      [prev-e ""]
      [next-e ""]
      [row '()]
      [col '()]
      [box '()]
-     ;[my-friends (flatten (list row col box))]
      [user-val #f])
 
     (define/public (empty-cand?)
@@ -59,16 +59,24 @@
     
 
     (define/public (reset-candidates!)
-      (set! candidates (list 1 2 3 4 5 6 7 8 9)))
+      (set! candidates init-candidates))
 
-    (define/public (update-candidates!)
+    (define/public (reset-all-candidates!)
+      (set! candidates (range 1 10))
+      (set! init-candidates (range 1 10)))
+
+    (define/public (update-candidates! type) ;;Two types: update candidates during solving (#t) or initial candidates (#f)
       (unless user-val
         (define (helper rest-of-candidates)
           (cond
             [(null? rest-of-candidates)
              (void)]
             [(member (car rest-of-candidates) (get-friends-values))
+             (if type ;; #t -> update, #f -> initial candidates
              (set! candidates (remove (car rest-of-candidates) candidates))
+             (begin
+               (set! init-candidates (remove (car rest-of-candidates) init-candidates))
+               (set! candidates init-candidates)))
              (helper (cdr rest-of-candidates))]
             [else
              (helper (cdr rest-of-candidates))]))
@@ -97,132 +105,3 @@
       (set! next-e e))
 
     (super-new)))
-
-(define row%
-  (class object%
-    (init-field
-     [row-number 0]
-     [elements '()])
-          
-    (define/public (get-element pos)
-      (list-ref elements (- pos 1)))
-
-    (define/public (delete-element-candidate! pos val)
-      (send (get-element pos) rm-candidate! val))
-            
-    (define/public (set-element! pos val)
-      (send (get-element pos) set-value! val))
-
-    (define/public (get-row)
-      elements)
-
-    (define/public (get-row-vals)
-      (map
-       (lambda (ele)
-         (send ele get-value))
-       elements))
-    
-    (define/public (row-contains? number)
-      (if (member number
-                  (get-row))
-          #t
-          #f))
-    
-    (super-new)))
-
-(define column%
-  (class object%
-    (init-field
-     [col-num 0]
-     [rows (list)])
-
-    (define/public (get-element pos)
-      (send (list-ref rows (- pos 1)) get-element col-num))
-
-    (define/public (get-col)
-      (define (helper rem-rows)
-        (if (null? rem-rows)
-            '()
-            (cons (send (first rem-rows) get-element col-num)
-                  (helper (rest rem-rows)))))
-      (helper rows))
-
-    (define/public (col-contains? number)
-      (if (member number
-                  (get-col))
-          #t
-          #f))
-
-    (super-new)))
-
-(define box%
-  (class object%
-    (init-field
-     [box-num 0]
-     [rows (list)]
-     [cols (list)])
-
-    (define/public (get-box)
-      (define (helper rem-rows rem-cols)
-        (cond
-          [(null? rem-rows)
-           '()]
-          [(null? rem-cols)
-           (helper (cdr rem-rows) cols)]
-          [else
-           (cons (send (first rem-rows) get-element (first rem-cols))
-                 (helper rem-rows (rest rem-cols)))]))
-      (helper rows cols))
-
-    (define/public (box-contains? number)
-      (if (member number
-                  (get-box))
-          #t
-          #f))
-
-    (super-new)))
-
-(define board%
-  (class object%
-    (init-field
-     [rows (list)])
-
-    (define/public (get-element row col)
-      (send (list-ref rows (- row 1)) get-element col))
-
-    (define/public (set-element! row col val)
-      (send (get-element row col) set-value! val))
-
-    (define/public (get-board-vals)
-      (for-each
-       (lambda (row)
-         (println (send row get-row-vals)))
-       rows))
-
-    (define/public (get-board-elements)
-      (flatten
-       (map
-        (lambda (row)
-          (send row get-row))
-        rows)))
-
-    (define/public (set-board! lst)
-      (define (helper row col values-lst)
-        (cond
-          [(or (> row 9) (null? values-lst))
-           (void)]
-          [(> col 9)
-           (helper (+ row 1) 1 values-lst)]
-          [(= 0 (first values-lst))
-           (helper row (+ col 1) (rest values-lst))]
-          [else
-           (send (get-element row col) set-value! (first values-lst))
-           (send (get-element row col) set-user-e!)
-           (helper row (+ col 1) (rest values-lst))]))
-      (helper 1 1 lst))
-
-
-    (super-new)))
-
-    
-     

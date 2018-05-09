@@ -14,8 +14,6 @@
      (range 1 80))
     elems))
 
-(define elems (make-board))
-
 (define (make-row n elems)
   (define (helper i)
     (if (> i 8)
@@ -48,18 +46,18 @@
          (helper (cdr rem-elems))))
      (helper holder))
    holders))
-                  
-(define (set-tmp-board! board)
-  (for-each
-   (lambda (i)
-     (send (list-ref board i) set-value! (+ i 1)))
-   (range 0 81)))
 
-(define (print-elems lst)
+(define (print-elems holder)
   (for-each
    (lambda (e)
      (send e print-value))
-   lst))
+   holder))
+
+(define (get-values holder)
+  (map
+   (lambda (e)
+     (send e get-value))
+   holder))
 
 (define brd (make-board))
 
