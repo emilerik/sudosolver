@@ -8,8 +8,8 @@
      [value 0]
      [candidates (list 1 2 3 4 5 6 7 8 9)]
      [init-candidates (list 1 2 3 4 5 6 7 8 9)]
-     [prev-e 'first]
-     [next-e 'tmp]
+     [prev-e ""]
+     [next-e ""]
      [row '()]
      [col '()]
      [box '()]
@@ -54,10 +54,8 @@
     (define/public (set-value! val)
       (set! value val))
 
-    (define/public (set-user-e! b) ;; b is user value #t or #f
-      (set! user-val b)
-      (when b
-        (set! candidates '())))
+    (define/public (set-user-e! b)
+      (set! user-val b))
     
 
     (define/public (reset-candidates!)

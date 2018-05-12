@@ -2,16 +2,16 @@
 (require "classes.rkt")
 (provide (all-defined-out))
 
-(define (make-elements)
+(define (make-board)
   (let
-      ([elems (map (lambda (e) (new element%)) (range 0 82))])
+      ([elems (map (lambda (e) (new element%)) (range 0 81))])
     (send (first elems) set-next-e! (second elems))
-    (send (list-ref elems 81) set-value! 'last)
+    (send (list-ref elems 80) set-prev-e! (list-ref elems 79)) 
     (for-each
      (lambda (i)
        (send (list-ref elems i) set-next-e! (list-ref elems (+ i 1)))
        (send (list-ref elems i) set-prev-e! (list-ref elems (- i 1))))
-     (range 1 81))
+     (range 1 80))
     elems))
 
 (define (make-row n elems)
@@ -59,9 +59,7 @@
      (send e get-value))
    holder))
 
-;(define (make-board)
-
-(define brd (make-elements))
+(define brd (make-board))
 
 (define box1 (make-box 0 brd))
 (define box2 (make-box 3 brd))
@@ -99,8 +97,5 @@
 (make-friends! rows 'r)
 (make-friends! cols 'c)
 (make-friends! boxes 'b)
-
-(define holders (append rows cols boxes))
-                 
 
 
