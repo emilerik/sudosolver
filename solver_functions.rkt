@@ -14,13 +14,13 @@
         [else (helper (cdr vals))]))
     (helper holder-vals)))
 
-(define (sudoku-solvable?) ;; decides if sudoku has illegal (multiple) elements in a row, col and/or box
+(define (sudoku-solvable? board) ;; decides if sudoku has illegal (multiple) elements in a row, col and/or box
   (define (helper rest-of-holders)
     (cond
       [(null? rest-of-holders) #t]
       [(valid-holder? (car rest-of-holders)) (helper (cdr rest-of-holders))]
       [else #f]))
-  (helper holders))
+  (helper (send board get-holders)))
        
       
         
@@ -38,7 +38,7 @@
 
 ;(define (multiple-solutions? board
 
-(define (sudoku-solved?) ;; returns #t if all holders are solved, and if there is a unique solution (UNIQUE CHECK DOESN'T WORK YET)
+(define (sudoku-solved? board) ;; returns #t if all holders are solved, and if there is a unique solution (UNIQUE CHECK DOESN'T WORK YET)
   (not (member #f (flatten
                    (map ;; this map gets rows, cols, boxes
                     (lambda (holders)
@@ -46,7 +46,7 @@
                        (lambda (holder)
                          (solved-holder? (get-values holder))) ; checks if for example row1 contains correct elements
                        holders))
-                    (list rows cols boxes))))))
+                    (send board get-holders))))))
            
 
 (define i 1)
@@ -54,7 +54,7 @@
 (define iter 0)
 
 (define (solving-algorithm board)
-  (let ([first-e (car board)] [solved-once #f] [result '()] [i 1] [j 0] [iter 0])
+  (let ([first-e (car (send board get-elems))] [solved-once #f] [result (make-board)] [i 1] [j 0] [iter 0])
     (define (helper prev-e curr-e next-e f) ;; f indicates if the algorithm is going backward or forward. f = #t: forward, f = #f: backward
       (set! j (+ j 1)) ;; iteration counter
       (cond
@@ -63,7 +63,7 @@
            [solved-once
             (printf "Error: Multiple solutions found")]
            [else (set! solved-once #t)
-                 (set! result brd)
+                 (set! result (send board get-elems)) 
                  (set! iter j)
                  (set! i (- i 1))
                  (helper (send prev-e get-pr-e) prev-e curr-e #f)])]
@@ -105,7 +105,7 @@
 (define (print-board board) ;; prints sudoku board
   (for-each
    (lambda (i)
-     (send (list-ref board i) print-value)
+     (send (list-ref (send board get-elems) i) print-value)
      (when (= (remainder (+ i 1) 9) 0)
        (newline)))
    (range 0 81)))

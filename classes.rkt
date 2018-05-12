@@ -75,10 +75,10 @@
              (void)]
             [(member (car rest-of-candidates) (get-friends-values))
              (if type ;; #t -> update, #f -> initial candidates
-             (set! candidates (remove (car rest-of-candidates) candidates))
-             (begin
-               (set! init-candidates (remove (car rest-of-candidates) init-candidates))
-               (set! candidates init-candidates)))
+                 (set! candidates (remove (car rest-of-candidates) candidates))
+                 (begin
+                   (set! init-candidates (remove (car rest-of-candidates) init-candidates))
+                   (set! candidates init-candidates)))
              (helper (cdr rest-of-candidates))]
             [else
              (helper (cdr rest-of-candidates))]))
@@ -106,4 +106,27 @@
     (define/public (set-next-e! e)
       (set! next-e e))
 
+    (super-new)))
+
+(define board%
+  (class object%
+    (init-field
+     [rows '()]
+     [cols '()]
+     [boxes '()]
+     [elems '()])
+
+    (define/public (get-rows)
+      rows)
+    (define/public (get-cols)
+      cols)
+    (define/public (get-boxes)
+      boxes)
+    (define/public (get-elems)
+      elems)
+    (define/public (get-elems-values)
+      (map (lambda (e) (send e get-value))
+           (flatten rows)))
+    (define/public (get-holders)
+      (list rows cols boxes))
     (super-new)))

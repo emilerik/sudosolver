@@ -8,7 +8,7 @@
 (define (initialize-candidates! board)
   (define (helper rest-of-elems i)
     (if (> i 81)
-        (printf "Sudoku-board set. ")
+        (printf "Sudoku-board set. ~n")
         (begin
           (send (car rest-of-elems) update-candidates! #f)
           (helper (cdr rest-of-elems) (+ i 1)))))
@@ -23,15 +23,16 @@
       (helper (cdr rest-of-elems) (+ i 1))))
   (helper board 1))
 
-(define (set-board! board elems)
-  (reset-board! board)
-  (for-each
-   (lambda (i)
-     (unless (= (list-ref elems i) 0)
-       (send (list-ref board i) set-value! (list-ref elems i))
-       (send (list-ref board i) set-user-e! #t)))
-   (range 0 81))
-  (initialize-candidates! board))
+(define (set-board! board sdk)
+  (let ([elems (send board get-elems)])
+    (reset-board! elems)
+    (for-each
+     (lambda (i)
+       (unless (= (list-ref sdk i) 0)
+         (send (list-ref elems i) set-value! (list-ref sdk i))
+         (send (list-ref elems i) set-user-e! #t)))
+     (range 0 81))
+    (initialize-candidates! elems)))
 
 (define (clear-filled-elems! board) ;; Clears all values that aren't flagged as user-values
   (cond
@@ -45,27 +46,28 @@
      (clear-filled-elems! (cdr board))]))
 
 (define (step-solve! board)
-  (unless (sudoku-solved?) (solve-sudoku! board))
-  (let ((rnd-elem (list-ref board (random 0 81))))
+  (let ([elems (send board get-elems)])
+  (unless (sudoku-solved? board) (solve-sudoku! elems)
+  (let ((rnd-elem (list-ref elems (random 0 81))))
     (cond
       [(send rnd-elem user-val?)
-       (step-solve! board)]
+       (step-solve! elems)]
       [else
        (send rnd-elem set-user-e! #t)
-       (clear-filled-elems! board)
-       (initialize-candidates! board)])))
+       (clear-filled-elems! elems)
+       (initialize-candidates! elems)])))))
 
 (define (solve-sudoku! board)
   (cond
-    [(sudoku-solved?) (printf "Sudoku already solved!")] ;; Only run function if sudoku not yet solved
-    [(not (sudoku-solvable?))
+    [(sudoku-solved? board) (printf "Sudoku already solved!")] ;; Only run function if sudoku not yet solved
+    [(not (sudoku-solvable? board))
      (printf "Error: sudoku cannot be solved - duplicate elements in row, column and/or box.")
-     (clear-filled-elems! board)]
+     (clear-filled-elems! (send board get-elems))]
     [else
      (solving-algorithm board)]))
        
-(set-board! brd sdk1)
-;(set-board! brd false-sdk1)
+(set-board! brd1 sdk1)
+(set-board! brd2 sdk2)
+(set-board! brd3 sdk3)
 
-(define rezz 0)
-(set! rezz brd)
+;(set-board! brd1 false-sdk1)
