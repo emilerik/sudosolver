@@ -9,7 +9,7 @@
      [candidates (list 1 2 3 4 5 6 7 8 9)]
      [init-candidates (list 1 2 3 4 5 6 7 8 9)]
      [prev-e 'first]
-     [next-e 'tmp]
+     [next-e 'last]
      [row '()]
      [col '()]
      [box '()]
@@ -124,9 +124,9 @@
       boxes)
     (define/public (get-elems)
       elems)
-    (define/public (get-elems-values)
+    (define/public (get-elems-vals)
       (map (lambda (e) (send e get-value))
-           (flatten rows)))
+           elems))
     (define/public (get-holders)
-      (list rows cols boxes))
+      (append rows cols boxes))
     (super-new)))

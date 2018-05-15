@@ -6,7 +6,8 @@
   (let
       ([elems (map (lambda (e) (new element%)) (range 0 82))])
     (send (first elems) set-next-e! (second elems))
-    (send (list-ref elems 81) set-value! 'last)
+    (send (last elems) set-value! 'last)
+    (send (last elems) set-user-e! #t)
     (for-each
      (lambda (i)
        (send (list-ref elems i) set-next-e! (list-ref elems (+ i 1)))
@@ -108,3 +109,6 @@
 (define brd1 (make-board))
 (define brd2 (make-board))
 (define brd3 (make-board))
+(define brd4 (make-board))
+(define false-brd1 (make-board))
+(define false-brd2 (make-board))
