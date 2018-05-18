@@ -8,8 +8,8 @@
      [value 0]
      [candidates (list 1 2 3 4 5 6 7 8 9)]
      [init-candidates (list 1 2 3 4 5 6 7 8 9)]
-     [prev-e 'first]
-     [next-e 'last]
+     [prev-e ""]
+     [next-e ""]
      [row '()]
      [col '()]
      [box '()]
@@ -54,10 +54,8 @@
     (define/public (set-value! val)
       (set! value val))
 
-    (define/public (set-user-e! b) ;; b is user value #t or #f
-      (set! user-val b)
-      (when b
-        (set! candidates '())))
+    (define/public (set-user-e! b)
+      (set! user-val b))
     
 
     (define/public (reset-candidates!)
@@ -75,10 +73,10 @@
              (void)]
             [(member (car rest-of-candidates) (get-friends-values))
              (if type ;; #t -> update, #f -> initial candidates
-                 (set! candidates (remove (car rest-of-candidates) candidates))
-                 (begin
-                   (set! init-candidates (remove (car rest-of-candidates) init-candidates))
-                   (set! candidates init-candidates)))
+             (set! candidates (remove (car rest-of-candidates) candidates))
+             (begin
+               (set! init-candidates (remove (car rest-of-candidates) init-candidates))
+               (set! candidates init-candidates)))
              (helper (cdr rest-of-candidates))]
             [else
              (helper (cdr rest-of-candidates))]))
@@ -106,36 +104,4 @@
     (define/public (set-next-e! e)
       (set! next-e e))
 
-    (super-new)))
-
-(define board%
-  (class object%
-    (init-field
-     [rows '()]
-     [cols '()]
-     [boxes '()]
-     [elems '()])
-
-    (define/public (get-rows)
-      rows)
-    (define/public (get-cols)
-      cols)
-    (define/public (get-boxes)
-      boxes)
-    (define/public (get-elems)
-      elems)
-    (define/public (get-elems-vals)
-      (map (lambda (e) (send e get-value))
-           elems))
-    (define/public (get-holders)
-      (append rows cols boxes))
-
-    (define/public (get-value i)
-      (send (list-ref elems i) get-value))
-
-    (define/public (set-value! i val)
-      (send (list-ref elems i) set-value! val)
-      (if (= val 0)
-          (send (list-ref elems i) set-user-e! #f) 
-          (send (list-ref elems i) set-user-e! #t)))
     (super-new)))

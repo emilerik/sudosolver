@@ -1,0 +1,1 @@
+("6.11" ("3d129a8f7fd92ddd0da7ca2fe4f5634104fb3966" . "947bfdfbf06d900bac76a7ba9b3af99d842b7fc8") #"/home/algba880/kurs/tddc74/Projekt Sudoku/classes.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
