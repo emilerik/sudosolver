@@ -21,6 +21,7 @@
     (define/public (get-value)
       value)
 
+    ;;ISN'T USED
     (define/public (print-value)
       (printf "~a " value))
 
@@ -33,19 +34,20 @@
         ['c (set! col holder)]
         ['b (set! box holder)]))
     
-    (define/public (get-row)
-      row)
+    ;(define/public (get-row)
+    ;  row)
 
-    (define/public (get-col)
-      col)
+    ;(define/public (get-col)
+    ;  col)
 
-    (define/public (get-box)
-      box)
+    ;(define/public (get-box)
+    ;  box)
 
-    (define/public (get-friends)
-      (flatten (list row col box)))
+    ;(define/public (get-friends)
+    ;  (flatten (list row col box)))
 
-    (define/public (get-friends-values)
+    ;; CAN BE OPTIMIZED
+    (define/public (get-friends-vals)
       (map
        (lambda (e)
          (send e get-value))
@@ -73,7 +75,7 @@
           (cond
             [(null? rest-of-candidates)
              (void)]
-            [(member (car rest-of-candidates) (get-friends-values))
+            [(member (car rest-of-candidates) (get-friends-vals))
              (if type ;; #t -> update, #f -> initial candidates
                  (set! candidates (remove (car rest-of-candidates) candidates))
                  (begin
