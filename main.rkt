@@ -133,24 +133,24 @@
            [(or (eqv? prev-e 'first) f)
             (send next-e update-candidates! #t)
             ;(when (< i 10) (printf "User-cell ~a. Going forward ~n" i)) (set! i (+ i 1)) ;; comment for debugging
-            (helper curr-e next-e (send next-e get-nx-e) #t)]
+            (helper curr-e next-e (send next-e get-next-e) #t)]
            [else
             ;(when (< i 10) (printf "User-cell ~a. Going backward ~n" i)) (set! i (- i 1))
-            (helper (send prev-e get-pr-e) prev-e curr-e #f)])]
+            (helper (send prev-e get-prev-e) prev-e curr-e #f)])]
         
         [(send curr-e empty-cand?)
          ;(when (< i 10) (printf "Cell ~a. No candidates. Resetting candidates. Going backwards ~n" i)) (set! i (- i 1))
          (send curr-e set-value! 0)
          (send curr-e reset-candidates!)
-         (helper (send prev-e get-pr-e) prev-e curr-e #f)]
+         (helper (send prev-e get-prev-e) prev-e curr-e #f)]
         
         [else
          ;(when (> i 80) (printf "Cell ~a. Candidates: ~a. " i (send curr-e get-candidates)))
          (send curr-e set-cand-to-val!)
          (send next-e update-candidates! #t)
          ;(when (< i 10) (printf "Set value to ~a. Next element candidates ~a. Going forward. ~n" (send curr-e get-value) (send next-e get-candidates))) (set! i (+ i 1))
-         (helper curr-e next-e (send next-e get-nx-e) #t)]))
-    (helper 'first first-e (send first-e get-nx-e) #t)
+         (helper curr-e next-e (send next-e get-next-e) #t)]))
+    (helper 'first first-e (send first-e get-next-e) #t)
     (printf "Number of iterations: ~a ~n" j)))
        
 (set-board! brd1 sdk1)
@@ -159,3 +159,5 @@
 (set-board! brd4 sdk4)
 (set-board! false-brd1 false-sdk1)
 (set-board! false-brd2 false-sdk2)
+
+(define 1st (car (send brd3 get-elems)))

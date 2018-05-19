@@ -1,0 +1,1 @@
+("6.11" ("3d129a8f7fd92ddd0da7ca2fe4f5634104fb3966" . "2d22b29c827bbcf87db1ed24c56d9e042a8ec6dd") #"/Users/Emil/Documents/Programmering/TDDC74/Projekt/SudoSolver2/sudosolver/classes.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))

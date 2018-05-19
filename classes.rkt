@@ -46,21 +46,23 @@
     (define/public (get-friends)
       (flatten (list row col box)))
 
-    ;; CAN BE OPTIMIZED
+    (define/private (rm-duplicates lst)
+      (cond
+        [(null? lst) '()]
+        [(member (car lst) (cdr lst))
+         (rm-duplicates (cdr lst))]
+        [else
+         (cons (car lst) (rm-duplicates (cdr lst)))]))
+      
+
+    ;; CANNOT BE OPTIMIZED
     (define/public (get-friends-vals)
-      (map
-       (lambda (e)
-         (send e get-value))
-       (flatten (list row col box))))
+      (map (lambda (e)
+             (send e get-value))
+           (append row col box)))
 
     (define/public (set-value! val)
       (set! value val))
-
-    (define/public (set-user-e! b) ;; b is user value #t or #f
-      (set! user-val b)
-      (when b
-        (set! candidates '())))
-    
 
     (define/public (reset-candidates!)
       (set! candidates init-candidates))
@@ -69,27 +71,28 @@
       (set! candidates (range 1 10))
       (set! init-candidates (range 1 10)))
 
+    (define/public (set-user-e! b) ;; b is user value #t or #f
+      (set! user-val b)
+      (if b
+        (set! candidates '())
+        (reset-candidates!)))
+
     (define/public (update-candidates! type) ;;Two types: update candidates during solving (#t) or initial candidates (#f)
       (unless user-val
-        (define (helper rest-of-candidates)
-          (cond
-            [(null? rest-of-candidates)
-             (void)]
-            [(member (car rest-of-candidates) (get-friends-vals))
-             (if type ;; #t -> update, #f -> initial candidates
-                 (set! candidates (remove (car rest-of-candidates) candidates))
-                 (begin
-                   (set! init-candidates (remove (car rest-of-candidates) init-candidates))
-                   (set! candidates init-candidates)))
-             (helper (cdr rest-of-candidates))]
-            [else
-             (helper (cdr rest-of-candidates))]))
-        (helper candidates)))
+        (let ([friends-vals (get-friends-vals)])
+          (set! candidates
+                (filter (lambda (cand)
+                          (not (member cand friends-vals)))
+                        candidates))
+          (unless type ;; #t -> update only, #f -> set initial candidates as well
+            (set! init-candidates candidates)))))
+              
+                            
     
-    (define/public (get-pr-e)
+    (define/public (get-prev-e)
       prev-e)
     
-    (define/public (get-nx-e)
+    (define/public (get-next-e)
       next-e)
 
     (define/public (get-candidates)
@@ -136,8 +139,9 @@
       (send (list-ref elems i) get-value))
 
     (define/public (set-value! i val)
-      (send (list-ref elems i) set-value! val)
-      (if (= val 0)
-          (send (list-ref elems i) set-user-e! #f) 
-          (send (list-ref elems i) set-user-e! #t)))
+      (let ([elem (list-ref elems i)])
+        (send elem set-value! val)
+        (if (= val 0)
+            (send elem set-user-e! #f) 
+            (send elem set-user-e! #t))))
     (super-new)))
