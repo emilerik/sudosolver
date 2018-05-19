@@ -43,8 +43,8 @@
     ;(define/public (get-box)
     ;  box)
 
-    ;(define/public (get-friends)
-    ;  (flatten (list row col box)))
+    (define/public (get-friends)
+      (flatten (list row col box)))
 
     ;; CAN BE OPTIMIZED
     (define/public (get-friends-vals)
