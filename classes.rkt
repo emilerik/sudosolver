@@ -6,8 +6,9 @@
   (class object%
     (init-field
      [value 0]
-     [candidates (list 1 2 3 4 5 6 7 8 9)]
-     [init-candidates (list 1 2 3 4 5 6 7 8 9)]
+     [guessed-candidates '()]
+     [init-candidates (range 0 10)]
+     [removed-candidates '()]
      [prev-e 'first]
      [next-e 'last]
      [row '()]
@@ -16,7 +17,7 @@
      [user-val #f])
 
     (define/public (empty-cand?)
-      (null? candidates))
+      (null? (get-candidates)))
 
     (define/public (get-value)
       value)
@@ -59,14 +60,13 @@
     (define/public (set-user-e! b) ;; b is user value #t or #f
       (set! user-val b)
       (when b
-        (set! candidates '())))
+        (set! init-candidates '())))
     
 
     (define/public (reset-candidates!)
-      (set! candidates init-candidates))
+      (set! guessed-candidates '()))
 
     (define/public (reset-all-candidates!)
-      (set! candidates (range 1 10))
       (set! init-candidates (range 1 10)))
 
     (define/public (update-candidates! type) ;;Two types: update candidates during solving (#t) or initial candidates (#f)
@@ -77,14 +77,13 @@
              (void)]
             [(member (car rest-of-candidates) (get-friends-vals))
              (if type ;; #t -> update, #f -> initial candidates
-                 (set! candidates (remove (car rest-of-candidates) candidates))
-                 (begin
-                   (set! init-candidates (remove (car rest-of-candidates) init-candidates))
-                   (set! candidates init-candidates)))
+                 (void)
+                 ;(set! candidates (remove (car rest-of-candidates) candidates))
+                 (set! init-candidates (remove (car rest-of-candidates) init-candidates)))
              (helper (cdr rest-of-candidates))]
             [else
              (helper (cdr rest-of-candidates))]))
-        (helper candidates)))
+        (helper (get-candidates))))
     
     (define/public (get-pr-e)
       prev-e)
@@ -93,15 +92,27 @@
       next-e)
 
     (define/public (get-candidates)
-      candidates)
+      (filter (lambda (cand)
+                (not (member cand (append removed-candidates guessed-candidates))))
+              init-candidates))
+
+    ;;TEMPORARY
+    (define/public (get-rm-candidates)
+      removed-candidates)
+    (define/public (get-init-candidates)
+      init-candidates)
 
     (define/public (rm-candidate! val)
-      (set! candidates
-            (remove val candidates)))
-
+      (when (= value 0)
+        (set! removed-candidates (cons val removed-candidates))))
+    (define/public (add-candidate! val)
+      (when (= value 0)
+        (set! removed-candidates (remove val removed-candidates))))
+    
     (define/public (set-cand-to-val!)
-      (set! value (car candidates))
-      (set! candidates (cdr candidates)))
+      (let ([cand (car (get-candidates))])
+        (set! value cand)
+        (set! guessed-candidates (cons cand guessed-candidates))))
 
     (define/public (set-prev-e! e)
       (set! prev-e e))

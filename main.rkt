@@ -44,10 +44,14 @@
   (helper (cdr holder) holder))
   
 (define (rm-cand-from-friends! friends candidate)
-  (for-each
-   (lambda (e)
-     (send e rm-candidate! candidate))
-   friends))
+  (for-each (lambda (e)
+              (send e rm-candidate! candidate))
+            friends))
+
+(define (add-cand-to-friends! friends candidate)
+  (for-each (lambda (e)
+              (send e add-candidate! candidate))
+            friends))
 
 (define (initialize-candidates! elems)
   (define (helper rest-of-elems i)
@@ -113,10 +117,10 @@
        (solve-singletons! elems) ;; Try solving fully or partly by finding elems with single candidates
        (cond
          [(sudoku-solved? board)
-           (printf "Sudoku Solved! ~nTime: ~a ~nNumber of iterations: ~a ~nSolving method: Singleton check." (- (current-inexact-milliseconds) startTime) counter)]
+          (printf "Sudoku Solved! ~nTime: ~a ~nNumber of iterations: ~a ~nSolving method: Singleton check." (- (current-inexact-milliseconds) startTime) counter)]
          [else
-           (solving-algorithm board)
-           (printf "Time: ~a ~nNumber of iterations: ~a ~nSolving method: Backtracking." (- (current-inexact-milliseconds) startTime) counter)])])))
+          (solving-algorithm board)
+          (printf "Time: ~a ~nNumber of iterations: ~a ~nSolving method: Backtracking." (- (current-inexact-milliseconds) startTime) counter)])])))
        
 
 ;; WILl BE REMOVED: i
@@ -126,29 +130,39 @@
       (set! j (+ j 1)) ;; iteration counter
       (set! counter j)
       (cond
+        ;[(= i 20) (void)]
         [(equal? (send curr-e get-value) 'last)] ;; Made it to the last element
          
         [(send curr-e user-val?)
          (cond
            [(or (eqv? prev-e 'first) f)
-            (send next-e update-candidates! #t)
-            ;(when (< i 10) (printf "User-cell ~a. Going forward ~n" i)) (set! i (+ i 1)) ;; comment for debugging
+            ;(send next-e update-candidates! #t)
+            (when (< i 10) (printf "User-cell ~a. Going forward ~n" i))
+            (set! i (+ i 1)) ;; comment for debugging
             (helper curr-e next-e (send next-e get-nx-e) #t)]
            [else
-            ;(when (< i 10) (printf "User-cell ~a. Going backward ~n" i)) (set! i (- i 1))
+            (when (< i 10) (printf "User-cell ~a. Going backward ~n" i))
+            (set! i (- i 1))
             (helper (send prev-e get-pr-e) prev-e curr-e #f)])]
         
         [(send curr-e empty-cand?)
-         ;(when (< i 10) (printf "Cell ~a. No candidates. Resetting candidates. Going backwards ~n" i)) (set! i (- i 1))
+         (when (< i 10) (printf "Cell ~a. No candidates. Resetting candidates. Going backwards ~n" i))
+         (set! i (- i 1))
          (send curr-e set-value! 0)
          (send curr-e reset-candidates!)
-         (helper (send prev-e get-pr-e) prev-e curr-e #f)]
+         (if (equal? prev-e 'first)
+             (printf "Encountered a bug")
+             (helper (send prev-e get-pr-e) prev-e curr-e #f))]
         
         [else
-         ;(when (> i 80) (printf "Cell ~a. Candidates: ~a. " i (send curr-e get-candidates)))
+         (when (< i 10) (printf "Cell ~a. Candidates: ~a. " i (send curr-e get-candidates)))
+         (unless f
+           (add-cand-to-friends! (send curr-e get-friends) (send curr-e get-value)))
          (send curr-e set-cand-to-val!)
-         (send next-e update-candidates! #t)
-         ;(when (< i 10) (printf "Set value to ~a. Next element candidates ~a. Going forward. ~n" (send curr-e get-value) (send next-e get-candidates))) (set! i (+ i 1))
+         (rm-cand-from-friends! (send curr-e get-friends) (send curr-e get-value))
+         ;(send next-e update-candidates! #t)
+         (when (< i 10) (printf "Set value to ~a. Next element candidates ~a. Going forward. ~n" (send curr-e get-value) (send next-e get-candidates)))
+         (set! i (+ i 1))
          (helper curr-e next-e (send next-e get-nx-e) #t)]))
     (helper 'first first-e (send first-e get-nx-e) #t)
     (printf "Number of iterations: ~a ~n" j)))
@@ -159,3 +173,6 @@
 (set-board! brd4 sdk4)
 (set-board! false-brd1 false-sdk1)
 (set-board! false-brd2 false-sdk2)
+
+(define elems (send brd3 get-elems))
+(define 1st (car elems))
