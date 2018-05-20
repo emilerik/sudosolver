@@ -61,7 +61,7 @@
 
 ;(define *color* (make-object color% 255 0 0 1.0))
 
-(define (correct-value value)
+(define (string-to-num value)
   (case value
     [("1") 1]
     [("2") 2]
@@ -87,7 +87,7 @@
                 [font *font*]
                 [callback
                  (lambda (this control-event)
-                   (send brd set-value! i (correct-value (send this get-value))))]))
+                   (send brd set-value! i (string-to-num (send this get-value))))]))
          (range 0 81))])
     text-fields))
 
@@ -126,7 +126,7 @@
   (set-text-fields! text-fields (send brd get-elems-vals)))
 
 (define (reset-proc button event)
-  (reset-board! brd)
+  (reset-board! (send brd get-elems))
   (set-text-fields! text-fields (map
                                  (lambda (i)
                                    "")
