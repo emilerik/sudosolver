@@ -2,16 +2,17 @@
 (require "classes.rkt")
 (provide (all-defined-out))
 
-(define (make-board)
+(define (make-elements)
   (let
-      ([elems (map (lambda (e) (new element%)) (range 0 81))])
+      ([elems (map (lambda (e) (new element%)) (range 0 82))])
     (send (first elems) set-next-e! (second elems))
-    (send (list-ref elems 80) set-prev-e! (list-ref elems 79)) 
+    (send (last elems) set-value! 'last)
+    (send (last elems) set-user-e! #t)
     (for-each
      (lambda (i)
        (send (list-ref elems i) set-next-e! (list-ref elems (+ i 1)))
        (send (list-ref elems i) set-prev-e! (list-ref elems (- i 1))))
-     (range 1 80))
+     (range 1 81))
     elems))
 
 (define (make-row n elems)
@@ -59,43 +60,56 @@
      (send e get-value))
    holder))
 
-(define brd (make-board))
+(define (make-board)
+  (let* ([elems (make-elements)]
 
-(define box1 (make-box 0 brd))
-(define box2 (make-box 3 brd))
-(define box3 (make-box 6 brd))
-(define box4 (make-box 27 brd))
-(define box5 (make-box 30 brd))
-(define box6 (make-box 33 brd))
-(define box7 (make-box 54 brd))
-(define box8 (make-box 57 brd))
-(define box9 (make-box 60 brd))
-(define boxes (list box1 box2 box3 box4 box5 box6 box7 box8 box9))
+         [box1 (make-box 0 elems)]
+         [box2 (make-box 3 elems)]
+         [box3 (make-box 6 elems)]
+         [box4 (make-box 27 elems)]
+         [box5 (make-box 30 elems)]
+         [box6 (make-box 33 elems)]
+         [box7 (make-box 54 elems)]
+         [box8 (make-box 57 elems)]
+         [box9 (make-box 60 elems)]
+         [boxes (list box1 box2 box3 box4 box5 box6 box7 box8 box9)]
 
-(define row1 (make-row 1 brd))
-(define row2 (make-row 2 brd))
-(define row3 (make-row 3 brd))
-(define row4 (make-row 4 brd))
-(define row5 (make-row 5 brd))
-(define row6 (make-row 6 brd))
-(define row7 (make-row 7 brd))
-(define row8 (make-row 8 brd))
-(define row9 (make-row 9 brd))
-(define rows (list row1 row2 row3 row4 row5 row6 row7 row8 row9))
+         [row1 (make-row 1 elems)]
+         [row2 (make-row 2 elems)]
+         [row3 (make-row 3 elems)]
+         [row4 (make-row 4 elems)]
+         [row5 (make-row 5 elems)]
+         [row6 (make-row 6 elems)]
+         [row7 (make-row 7 elems)]
+         [row8 (make-row 8 elems)]
+         [row9 (make-row 9 elems)]
+         [rows (list row1 row2 row3 row4 row5 row6 row7 row8 row9)]
 
-(define col1 (make-col 1 brd))
-(define col2 (make-col 2 brd))
-(define col3 (make-col 3 brd))
-(define col4 (make-col 4 brd))
-(define col5 (make-col 5 brd))
-(define col6 (make-col 6 brd))
-(define col7 (make-col 7 brd))
-(define col8 (make-col 8 brd))
-(define col9 (make-col 9 brd))
-(define cols (list col1 col2 col3 col4 col5 col6 col7 col8 col9))
+         [col1 (make-col 1 elems)]
+         [col2 (make-col 2 elems)]
+         [col3 (make-col 3 elems)]
+         [col4 (make-col 4 elems)]
+         [col5 (make-col 5 elems)]
+         [col6 (make-col 6 elems)]
+         [col7 (make-col 7 elems)]
+         [col8 (make-col 8 elems)]
+         [col9 (make-col 9 elems)]
+         [cols (list col1 col2 col3 col4 col5 col6 col7 col8 col9)])
 
-(make-friends! rows 'r)
-(make-friends! cols 'c)
-(make-friends! boxes 'b)
+    (make-friends! rows 'r)
+    (make-friends! cols 'c)
+    (make-friends! boxes 'b)
 
+    (new board%
+         [rows rows]
+         [cols cols]
+         [boxes boxes]
+         [elems elems])))
 
+(define brd (make-board))                 
+(define brd1 (make-board))
+(define brd2 (make-board))
+(define brd3 (make-board))
+(define brd4 (make-board))
+(define false-brd1 (make-board))
+(define false-brd2 (make-board))

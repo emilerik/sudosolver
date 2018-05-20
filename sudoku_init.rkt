@@ -1,6 +1,7 @@
 #lang racket
-(require "classes.rkt")
-(provide (all-defined-out))
+(require "element.rkt")
+(require "board.rkt")
+(provide (all-defined-out)) ;;SKA ÄNDRAS
 
 (define (make-elements)
   (let
