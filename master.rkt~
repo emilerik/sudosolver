@@ -1,8 +1,0 @@
-#lang racket
-(require "solver_functions.rkt")
-(require "classes.rkt")
-(require "sudoku_init.rkt")
-(require "test_sudokus.rkt")
-(require "main.rkt")
-(require "test_grid.rkt")
-
