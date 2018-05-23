@@ -73,8 +73,8 @@
     (define/public (set-user-e! b) ;; b is user value #t or #f
       (set! user-val b)
       (if b
-        (set! candidates '())
-        (reset-candidates!)))
+          (set! candidates '())
+          (reset-all-candidates!)))
 
     (define/public (update-candidates! type) ;;Two types: update candidates during solving (#t) or initial candidates (#f)
       (unless user-val

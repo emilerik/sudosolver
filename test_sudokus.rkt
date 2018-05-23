@@ -60,3 +60,10 @@
                          0 6 0 0 0 0 2 8 0
                          0 3 0 4 1 9 0 0 5
                          0 0 0 0 8 0 0 7 9))
+
+(define empty-sudoku
+  (for/list ([j (range 0 81)])
+    0))
+
+(define (sample-sudoku)
+  (list-ref (list sdk1 sdk2 sdk3 sdk4) (random 0 4)))
