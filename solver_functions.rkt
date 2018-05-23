@@ -1,38 +1,26 @@
+;; This file contains all the solving algorithms, and the help procedures to check if a board is solved or solvable. 
+;; It has the master solve-function and its slaves, solving-algorithm and solve-singletons. It also has a step solve-procedure.
+;; This file can be used as a backdoor to set a board from a list of a sudoku, solving it, and printing it, without using the graphical interface.
+;; Authors: Algirdas Bartkevicius & Emil Eriksson
+;; Last update: 2018-05-23
+;; Moved some functions to board_functions.rkt
+
 #lang racket
 (provide (all-defined-out))
-(require "sudoku_init.rkt")
-(require "test_sudokus.rkt")
+(require "board_functions.rkt")
 
-(define counter 0)
+;; I/O: board% / boolean
+;; Decides if a holder (row, column or box) contains the correct values (1-9 exactly once).
+(define (solved-holder? holder) 
+  (let ([elems (map (lambda (e) (send e get-value)) holder)])
+    (define (helper vals)
+      (cond
+        [(null? vals) #t]
+        [(not (member (car vals) elems)) #f] ;; When it finds that one of the values 1-9 isn't in the holder, return #f
+        [else (helper (cdr vals))]))
+    (helper (range 1 10))))
 
-;;WILL BE REMOVED
-(define (print-board board) 
-  (for-each
-   (lambda (i)
-     (send (list-ref (send board get-elems) i) print-value)
-     (when (= (remainder (+ i 1) 9) 0)
-       (newline)))
-   (range 0 81)))
-
-;; I/O: board% / 
-;; Solves Sudoku by useing different techniques.
-(define (solve-sudoku! board)
-  (let ([startTime (current-inexact-milliseconds)] [elems (send board get-elems)])
-    (cond
-      [(sudoku-solved? board) (printf "Sudoku already solved!")] ;; Only run function if sudoku not yet solved.
-      [(not (sudoku-solvable? board)) ;; Illegal sudoku.
-       (printf "Error: duplicate elements in row, column and/or box.")] 
-      [else
-       (initialize-candidates! elems) ;;Makes cadidate list and updates them by checking friends values.
-       (solve-singletons! elems) ;; Try solving fully or partly by finding elems with single candidates.
-       (cond
-         [(sudoku-solved? board)
-           (printf "Sudoku Solved! ~nTime: ~a ~nNumber of iterations: ~a ~nSolving method: Singleton check." (- (current-inexact-milliseconds) startTime) counter)]
-         [else
-           (solving-algorithm board)
-           (printf "Time: ~a ~nNumber of iterations: ~a ~nSolving method: Backtracking." (- (current-inexact-milliseconds) startTime) counter)])])))
-
-;; I/O: board% / bolean
+;; I/O: board% / boolean
 ;; Calls if all 27 holders (9 columns, 9 rows and 9 boxes) has values 1-9 exactly once. The main rule of Sudoku.
 (define (sudoku-solved? board)
   (define (helper rest-of-holders)
@@ -43,106 +31,17 @@
       [else #f]))
   (helper (send board get-holders)))
 
-;; I/O: board% / bolean
+;; I/O: board% / boolean
 ;; Decides if sudoku has illegal (multiple) elements in a row, col and/or box.
 (define (sudoku-solvable? board) 
   (define (helper rest-of-holders)
     (cond
-      [(null? rest-of-holders) #t]
+      [(null? rest-of-holders)]
       [(valid-holder? (car rest-of-holders)) (helper (cdr rest-of-holders))]
       [else #f]))
   (helper (send board get-holders)))
 
-;; I/O: list of element% / No output
-;;Checks all elements and ,if needed, updates their candidate list.
-(define (initialize-candidates! elems)
-  (define (helper rest-of-elems i)
-    (unless (or (> i 81) (null? rest-of-elems))
-      (send (car rest-of-elems) update-candidates! #f)
-      (helper (cdr rest-of-elems) (+ i 1))))
-  (helper elems 1))
-
-;; I/O: list of element% / No output
-;; Finds all elements who has only one possible candidate and makes it his value. Also eliminates such a element from the friends list.
-(define (solve-singletons! elems)
-  (set! counter (+ counter 1))
-  (let ([found-singleton #f])
-    (for-each (lambda (e)
-                (when (= 1 (length (send e get-candidates)))
-                  (set! found-singleton #t)
-                  (send e set-cand-to-val!)
-                  (send e set-user-e! #t)
-                  (rm-cand-from-friends! (send e get-friends) (send e get-value))))
-              elems)
-    (when found-singleton (solve-singletons! elems))))
-
-;; WILl BE REMOVED: i
-;; I/O: board% / 
-;; Solves sudoku board by going forward or backward i elements list.
-(define (solving-algorithm board)
-  (let ([first-e (car (send board get-elems))] [i 1] [j 0])
-    (define (helper prev-e curr-e next-e f) ;; f indicates if the algorithm is going backward or forward. f = #t: forward, f = #f: backward
-      (set! j (+ j 1)) ;; iteration counter
-      (set! counter j)
-      (cond
-        [(equal? (send curr-e get-value) 'last)] ;; Made it to the last element.
-         
-        [(send curr-e user-val?)
-         (cond
-           [(or (eqv? prev-e 'first) f)
-            (send next-e update-candidates! #t)
-            ;(when (< i 10) (printf "User-cell ~a. Going forward ~n" i)) (set! i (+ i 1)) ;; comment for debugging
-            (helper curr-e next-e (send next-e get-next-e) #t)]
-           [else
-            ;(when (< i 10) (printf "User-cell ~a. Going backward ~n" i)) (set! i (- i 1))
-            (helper (send prev-e get-prev-e) prev-e curr-e #f)])]
-        
-        [(send curr-e empty-cand?)
-         ;(when (< i 10) (printf "Cell ~a. No candidates. Resetting candidates. Going backwards ~n" i)) (set! i (- i 1))
-         (send curr-e set-value! 0)
-         (send curr-e reset-candidates!)
-         (helper (send prev-e get-prev-e) prev-e curr-e #f)]
-        
-        [else
-         ;(when (> i 80) (printf "Cell ~a. Candidates: ~a. " i (send curr-e get-candidates)))
-         (send curr-e set-cand-to-val!)
-         (send next-e update-candidates! #t)
-         ;(when (< i 10) (printf "Set value to ~a. Next element candidates ~a. Going forward. ~n" (send curr-e get-value) (send next-e get-candidates))) (set! i (+ i 1))
-         (helper curr-e next-e (send next-e get-next-e) #t)]))
-    (helper 'first first-e (send first-e get-next-e) #t)
-    (printf "Number of iterations: ~a ~n" j)))
-
-;;WILL BE REMOVED ?
-(define (unique-candidate holder)
-  (define (helper other-elems rest-of-elems)
-    (cond
-      [(null? rest-of-elems) (void)]
-      [else
-       (define (helper2 rest-of-cands)
-         (cond
-           [(null? rest-of-cands) (void)]
-           [(member (car rest-of-cands) (get-holder-candidates other-elems))
-            (helper2 (cdr rest-of-cands))]
-           [else
-            (send (car rest-of-elems) set-value! (car rest-of-cands))
-            (send (car rest-of-elems) set-user-e! #t)]))
-       (helper2 (send (car rest-of-elems) get-candidates))])
-    (unless (null? rest-of-elems)
-      (helper (remove (car rest-of-elems) holder) (cdr rest-of-elems))))
-  (helper (cdr holder) holder))
-  
-(define (rm-cand-from-friends! friends candidate)
-  (for-each
-   (lambda (e)
-     (send e rm-candidate! candidate))
-   friends))
-
-(define (get-holder-candidates holder)
-  (flatten (map
-            (lambda (e)
-              (send e get-candidates))
-            holder)))
-
+;; I/O: holder = list of element% / boolean
 ;; Decides if a holder contains any multiple elements or illegal elements (> 9 or < 0).
 (define (valid-holder? holder) 
   (let ([holder-vals (map (lambda (e) (send e get-value))
@@ -155,33 +54,68 @@
         [else (helper (cdr vals))]))
     (helper holder-vals)))
 
-;; I/O: board% / bolean
-;; Decides if a holder (row, column or box) contains the correct values (1-9 exactly once).
-(define (solved-holder? holder) 
-  (let ([elems (map (lambda (e) (send e get-value)) holder)])
-    (define (helper vals)
+;; I/O: board% / No output
+;; Master function for calling solving procedures
+(define (solve-sudoku! board)
+  (cond
+    [(sudoku-solved? board) (printf "Sudoku already solved!")] ;; Only run function if sudoku not yet solved.
+    [(not (sudoku-solvable? board)) ;; Illegal sudoku.
+     (printf "Error: duplicate elements in row, column and/or box.")] 
+    [else
+     (initialize-candidates! (send board get-elems)) ;; Makes candidate list and updates them by checking friends values.
+     (solve-singletons! (send board get-elems))  ;; Try solving fully or partly by finding elems with single candidates.
+     (unless (sudoku-solved? board)
+       (solving-algorithm! board))
+     (printf "Sudoku solved!~n ~n")
+     (print-board board)]))
+  
+
+;; I/O: list of element% / No output
+;; Finds all elements who has only one possible candidate and makes it his value. Also eliminates such a element from the friends list.
+(define (solve-singletons! elems)
+  (let ([found-singleton #f])
+    (for-each (lambda (e)
+                (when (= 1 (length (send e get-candidates)))
+                  (set! found-singleton #t)
+                  (send e set-cand-to-val!)
+                  (send e set-user-e! #t)
+                  (rm-cand-from-friends! (send e get-friends) (send e get-value))))
+              elems)
+    (when found-singleton (solve-singletons! elems))))
+
+;; I/O: board% / No output
+;; Solves sudoku board by going forward or backward in elements list.
+(define (solving-algorithm! board)
+  (let ([first-e (car (send board get-elems))] [j 0])
+    (define (helper prev-e curr-e next-e f) ;; f indicates if the algorithm is going backward or forward. f = #t: forward, f = #f: backward
+      (set! j (+ j 1)) ;; iteration counter
       (cond
-        [(null? vals) #t]
-        [(not (member (car vals) elems)) #f] ;; When it finds that one of the values 1-9 isn't in the holder, return #f
-        [else (helper (cdr vals))]))
-    (helper (range 1 10))))
+        [(equal? (send curr-e get-value) 'last)] ;; Made it to the last element.
+         
+        [(send curr-e user-val?)
+         (cond
+           [(or (eqv? prev-e 'first) f)
+            (send next-e update-candidates! #t)
+            (helper curr-e next-e (send next-e get-next-e) #t)]
+           [else
+            (helper (send prev-e get-prev-e) prev-e curr-e #f)])]
+        
+        [(send curr-e empty-cand?)
+         (send curr-e set-value! 0)
+         (send curr-e reset-candidates!)
+         (helper (send prev-e get-prev-e) prev-e curr-e #f)]
+        
+        [else
+         (send curr-e set-cand-to-val!)
+         (send next-e update-candidates! #t)
+         (helper curr-e next-e (send next-e get-next-e) #t)]))
+    (helper 'first first-e (send first-e get-next-e) #t)))
 
-;; Clears all values that aren't flagged as user-values.
-(define (clear-filled-elems! elems) 
-  (define (helper elems)
-    (cond
-      [(null? elems) (void)]
-      [(send (car elems) user-val?)
-       (helper (cdr elems))]
-      [else
-       (send (car elems) set-value! 0)
-       (send (car elems) reset-all-candidates!)
-       (helper (cdr elems))]))
-  (helper elems))
-
+;; I/O: board% / No output
+;; Solves one random value on the board.
 (define (step-solve! board)
   (unless (sudoku-solved? board)
-    (solving-algorithm board)
+    (solving-algorithm! board)
     (let* ([elems (send board get-elems)] [rnd-elem (list-ref elems (random 0 81))])
       (cond
         [(send rnd-elem user-val?)
@@ -191,34 +125,3 @@
          (send rnd-elem set-user-e! #t)
          (clear-filled-elems! elems)]))))
 
-;; MAY NOT BE NEEDED (?)
-(define (reset-board! elems)
-  (define (helper rest-of-elems i)
-    (unless (> i 81)
-      (send (car rest-of-elems) set-value! 0)
-      (send (car rest-of-elems) reset-all-candidates!)
-      (send (car rest-of-elems) set-user-e! #f)
-      (helper (cdr rest-of-elems) (+ i 1))))
-  (helper elems 1))
-
-;; WILL BE REMOVED
-(define (set-board! board sdk)
-  (let ([elems (send board get-elems)])
-    (reset-board! elems)
-    (for-each
-     (lambda (i)
-       (unless (= (list-ref sdk i) 0)
-         (send (list-ref elems i) set-value! (list-ref sdk i))
-         (send (list-ref elems i) set-user-e! #t)))
-     (range 0 81))
-    (initialize-candidates! (send board get-elems))))
-
-       
-(set-board! brd1 sdk1)
-(set-board! brd2 sdk2)
-(set-board! brd3 sdk3)
-(set-board! brd4 sdk4)
-(set-board! false-brd1 false-sdk1)
-(set-board! false-brd2 false-sdk2)
-
-(define 1st (car (send brd3 get-elems)))
