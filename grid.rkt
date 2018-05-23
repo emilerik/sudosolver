@@ -1,16 +1,21 @@
+;; This file has two purposes: creating the graphical interface, including text-fields and borders, and handling the user input.
+;; It uses solver_functions.rkt to solve board and to detect illegal entries from user. This file is used to start the program.
+;; Authors: Algirdas Bartkevicius & Emil Eriksson
+;; Last update: 2018-05-23
+;; Added comments
+
 #lang racket
 (provide (all-defined-out))
 (require "solver_functions.rkt")
 (require "sudoku_init.rkt")
 (require "test_sudokus.rkt")
+(require "board_functions.rkt")
 (require racket/gui/base)
-(require racket/draw)
-
-(define h 270)
-(define w 270)
 
 ;; WINDOW APPEARANCE
 
+(define h 270)
+(define w 270)
 (define *window* (new frame%
                       [width w]
                       [height (+ 30 h)]
@@ -68,6 +73,7 @@
     (set-board! user-board sudoku)
     (set-text-fields! sudoku)))
 
+;; Displays a popup box for the user
 (define (notify message)
   (define dialog-box 
     (new dialog% 
@@ -126,7 +132,9 @@
     [("9") 9]
     [("") 0]
     [else 'error]))
-    
+
+;; I/O: No inputs / list of text-fields
+;; Creates text-fields in the grid at appropriate places, and also specifies handle input (callback) in these text-fields.
 (define (make-text-fields)
   (let
       ([text-fields
@@ -156,6 +164,8 @@
              (range 0 81))])
     text-fields))
 
+;; I/O: sudoku values from list / sudoku values in grid
+;; Takes in a list of values and sets text fields to these values
 (define (set-text-fields! vals)
   (for
       ([i text-fields] [j vals])
@@ -165,19 +175,3 @@
 
 (define user-board (make-board))
 (define text-fields (make-text-fields))
-
-;(set-board! user-board sdk3)
-
-;(set-text-fields! sdk3)
-
-;(set-text-fields! text-fields (send user-board get-elems-vals))
-
-;; HELP FUNCTIONS
-
-(define (get-text-field-vals text-fields)
-  (map
-   (lambda (txt)
-     (send txt get-value))
-   text-fields))
-
-(define elmns (send user-board get-elems))

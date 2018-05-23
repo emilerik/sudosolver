@@ -1,3 +1,8 @@
+;; Specifies a board-class which contains all elements and holders, with various setters and getters for these.
+;; Authors: Algirdas Bartkevicius & Emil Eriksson
+;; Last update: 2018-05-23
+;; Added comments
+
 #lang racket
 (provide board%)
 
@@ -11,15 +16,20 @@
 
     (define/public (get-rows)
       rows)
+    
     (define/public (get-cols)
       cols)
+    
     (define/public (get-boxes)
       boxes)
+    
     (define/public (get-elems)
       elems)
+    
     (define/public (get-elems-vals)
       (map (lambda (e) (send e get-value))
            elems))
+    
     (define/public (get-holders)
       (append rows cols boxes))
 

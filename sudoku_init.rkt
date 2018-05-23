@@ -1,7 +1,13 @@
+;; This file has procedures to create all the components of a board - first making 82 element%s (last one is a flag), then making the rows, cols and boxes which contain these.
+;; Last it has the make board-function which creates a board% with 82 element%s and connects each element with its "friends" (see element.rkt)
+;; Authors: Algirdas Bartkevicius & Emil Eriksson
+;; Last update: 2018-05-23
+;; Added comments
+
 #lang racket
 (require "element.rkt")
 (require "board.rkt")
-(provide (all-defined-out)) ;;SKA ÄNDRAS
+(provide make-board)
 
 (define (make-elements)
   (let
@@ -49,18 +55,6 @@
      (helper holder))
    holders))
 
-(define (print-elems holder)
-  (for-each
-   (lambda (e)
-     (send e print-value))
-   holder))
-
-(define (get-values holder)
-  (map
-   (lambda (e)
-     (send e get-value))
-   holder))
-
 (define (make-board)
   (let* ([elems (make-elements)]
 
@@ -106,11 +100,3 @@
          [cols cols]
          [boxes boxes]
          [elems elems])))
-
-(define brd (make-board))                 
-(define brd1 (make-board))
-(define brd2 (make-board))
-(define brd3 (make-board))
-(define brd4 (make-board))
-(define false-brd1 (make-board))
-(define false-brd2 (make-board))
