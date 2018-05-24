@@ -9,6 +9,9 @@
 (provide (all-defined-out))
 (require "board_functions.rkt")
 
+;; Global iteration counter
+(define iter 0)
+
 ;; I/O: board% / boolean
 ;; Decides if a holder (row, column or box) contains the correct values (1-9 exactly once).
 (define (solved-holder? holder) 
@@ -31,6 +34,24 @@
       [else #f]))
   (helper (send board get-holders)))
 
+;; I/O: holder = list of element% / boolean
+;; Decides if a holder contains any multiple elements or illegal elements (> 9 or < 0).
+(define (valid-holder? holder) 
+  (let ([holder-vals (map (lambda (e) (send e get-value))
+                          holder)])
+    (define (helper vals)
+      (cond
+        [(null? vals)]
+        [(not (and (number? (car vals)) (> (car vals) -1) (< (car vals) 10)))
+         (printf "Error: sudoku contains illegal elements. Valid values are 1-9.~n")
+         #f]
+        [(= 0 (car vals)) (helper (cdr vals))]
+        [(member (car vals) (cdr vals))
+         (printf "Error: duplicate elements in row, column and/or box.~n")
+         #f]
+        [else (helper (cdr vals))]))
+    (helper holder-vals)))
+
 ;; I/O: board% / boolean
 ;; Decides if sudoku has illegal (multiple) elements in a row, col and/or box.
 (define (sudoku-solvable? board) 
@@ -41,39 +62,29 @@
       [else #f]))
   (helper (send board get-holders)))
 
-;; I/O: holder = list of element% / boolean
-;; Decides if a holder contains any multiple elements or illegal elements (> 9 or < 0).
-(define (valid-holder? holder) 
-  (let ([holder-vals (map (lambda (e) (send e get-value))
-                          holder)])
-    (define (helper vals)
-      (let ([first-val (car vals)])
-        (cond
-          [(null? vals)]
-          [(= 0 first-val) (helper (cdr vals))]
-          [(or (> first-val 9) (< first-val 0) (not (number? first-val)) (member first-val (cdr vals))) #f]
-          [else (helper (cdr vals))]))
-      (helper holder-vals))))
-
 ;; I/O: board% / No output
 ;; Master function for calling solving procedures
 (define (solve-sudoku! board)
   (cond
     [(sudoku-solved? board) (printf "Sudoku already solved!")] ;; Only run function if sudoku not yet solved.
     [(not (sudoku-solvable? board)) ;; Illegal sudoku.
-     (printf "Error: duplicate elements in row, column and/or box.")] 
+     (printf "Sudoku cannot be solved.")] 
     [else
-     (initialize-candidates! (send board get-elems)) ;; Makes candidate list and updates them by checking friends values.
-     (solve-singletons! (send board get-elems))  ;; Try solving fully or partly by finding elems with single candidates.
-     (unless (sudoku-solved? board)
-       (solving-algorithm! board))
-     (printf "Sudoku solved!~n ~n")
-     (print-board board)]))
+     (let ([time (current-inexact-milliseconds)])
+       (initialize-candidates! (send board get-elems)) ;; Makes candidate list and updates them by checking friends values.
+       (solve-singletons! (send board get-elems))  ;; Try solving fully or partly by finding elems with single candidates.
+       (unless (sudoku-solved? board)
+         (solving-algorithm! board))
+       (set! time (- (current-inexact-milliseconds) time))
+       (printf "Sudoku solved! ~nNumber of iterations: ~a.~nTime: ~a ms.~n~n" iter time)
+       (print-board board)
+       (set! iter 0))]))
   
 
 ;; I/O: list of element% / No output
 ;; Finds all elements who has only one possible candidate and makes it his value. Also eliminates such a element from the friends list.
 (define (solve-singletons! elems)
+  (set! iter (+ iter 1)) ;; iteration counter
   (let ([found-singleton #f])
     (for-each (lambda (e)
                 (when (= 1 (length (send e get-candidates)))
@@ -87,9 +98,9 @@
 ;; I/O: board% / No output
 ;; Solves sudoku board by going forward or backward in elements list.
 (define (solving-algorithm! board)
-  (let ([first-e (car (send board get-elems))] [j 0])
+  (let ([first-e (car (send board get-elems))])
     (define (helper prev-e curr-e next-e f) ;; f indicates if the algorithm is going backward or forward. f = #t: forward, f = #f: backward
-      (set! j (+ j 1)) ;; iteration counter
+      (set! iter (+ iter 1)) ;; iteration counter
       (cond
         [(equal? (send curr-e get-value) 'last)] ;; Made it to the last element.
          
@@ -115,14 +126,21 @@
 ;; I/O: board% / No output
 ;; Solves one random value on the board.
 (define (step-solve! board)
-  (unless (sudoku-solved? board)
-    (solving-algorithm! board)
-    (let* ([elems (send board get-elems)] [rnd-elem (list-ref elems (random 0 81))])
-      (cond
-        [(send rnd-elem user-val?)
-         (clear-filled-elems! elems)
-         (step-solve! board)]
-        [else
-         (send rnd-elem set-user-e! #t)
-         (clear-filled-elems! elems)]))))
+  (if (sudoku-solved? board)
+      (printf "Sudoku already solved!~n")
+      (begin 
+        (step-solve-helper board)
+        (print-board board))))
+
+(define (step-solve-helper board)
+  (solving-algorithm! board)
+  (set! iter 0)
+  (let* ([elems (send board get-elems)] [rnd-elem (list-ref elems (random 0 81))])
+    (cond
+      [(send rnd-elem user-val?)
+       (clear-filled-elems! elems)
+       (step-solve-helper board)]
+      [else
+       (send rnd-elem set-user-e! #t)
+       (clear-filled-elems! elems)])))
 

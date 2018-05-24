@@ -12,34 +12,36 @@
 
 ;; I/O: list of element% / No output
 ;; Resets the board by resetting all elements, candidates and init-candidates
-(define (reset-board! elems)
+(define (reset-board! board)
   (define (helper rest-of-elems i)
     (unless (> i 81)
       (send (car rest-of-elems) set-value! 0)
       (send (car rest-of-elems) reset-all-candidates!)
       (send (car rest-of-elems) set-user-e! #f)
       (helper (cdr rest-of-elems) (+ i 1))))
-  (helper elems 1))
+  (helper (send board get-elems) 1))
 
 ;; I/O: board%, list of sudoku values / No output
 ;; Sets a sudoku board to contain the values from a list
 (define (set-board! board sdk)
-  (let ([elems (send board get-elems)])
-    (reset-board! elems)
-    (for-each
-     (lambda (i)
-       (unless (= (list-ref sdk i) 0)
-         (send (list-ref elems i) set-value! (list-ref sdk i))
-         (send (list-ref elems i) set-user-e! #t)))
-     (range 0 81))
-    (initialize-candidates! (send board get-elems))))
+  (if (not (= (length sdk) 81))
+      (printf "Error: Please enter a sudoku with 81 elements")
+      (let ([elems (send board get-elems)])
+        (reset-board! board)
+        (for-each
+         (lambda (i)
+           (unless (= (list-ref sdk i) 0)
+             (send (list-ref elems i) set-value! (list-ref sdk i))
+             (send (list-ref elems i) set-user-e! #t)))
+         (range 0 81))
+        (initialize-candidates! (send board get-elems)))))
 
 ;; I/O: friends of element%, candidate value / No output
 ;; Goes through an element%'s friends, and removes a value from their candidate list.
 (define (rm-cand-from-friends! friends candidate)
   (for-each (lambda (e)
-     (send e rm-candidate! candidate))
-   friends))
+              (send e rm-candidate! candidate))
+            friends))
 
 ;; I/O: list of element% / No output
 ;; Clears all values that aren't flagged as user-values.
@@ -79,7 +81,7 @@
 (define brd3 (make-board))
 (define brd4 (make-board))
 (define false-brd1 (make-board))
-       
+ 
 (set-board! brd1 sdk1)
 (set-board! brd2 sdk2)
 (set-board! brd3 sdk3)

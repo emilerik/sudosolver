@@ -40,9 +40,11 @@
       (send (list-ref elems i) get-value))
 
     (define/public (set-value! i val)
+      (if (and (number? val) (and (> 0 val) (< 10 val)))
       (let ([elem (list-ref elems i)])
         (send elem set-value! val)
         (if (= 0 val)
             (send elem set-user-e! #f)
-            (send elem set-user-e! #t))))
+            (send elem set-user-e! #t)))
+      (printf "Error: ~a is not a valid input. Please enter a number from 1-9.~n" val)))
     (super-new)))

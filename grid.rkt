@@ -21,8 +21,6 @@
                       [height (+ 30 h)]
                       [label "SudoSolver"]))
 
-(send *window* show #t)
-
 (define *font* (make-object font% 60 'default))
 
 (define grid
@@ -64,7 +62,7 @@
              (set-text-fields! (send user-board get-elems-vals)))))
 
 (define (reset-proc button event)
-  (reset-board! (send user-board get-elems))
+  (reset-board! user-board)
   (set-text-fields! (map (lambda (i) "")
                          (range 0 81))))
 
