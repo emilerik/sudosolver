@@ -47,12 +47,13 @@
   (let ([holder-vals (map (lambda (e) (send e get-value))
                           holder)])
     (define (helper vals)
-      (cond
-        [(null? vals) #t]
-        [(= 0 (car vals)) (helper (cdr vals))]
-        [(or (> (car vals) 9) (< (car vals) 0) (member (car vals) (cdr vals))) #f]
-        [else (helper (cdr vals))]))
-    (helper holder-vals)))
+      (let ([first-val (car vals)])
+        (cond
+          [(null? vals)]
+          [(= 0 first-val) (helper (cdr vals))]
+          [(or (> first-val 9) (< first-val 0) (not (number? first-val)) (member first-val (cdr vals))) #f]
+          [else (helper (cdr vals))]))
+      (helper holder-vals))))
 
 ;; I/O: board% / No output
 ;; Master function for calling solving procedures
