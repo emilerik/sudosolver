@@ -13,15 +13,6 @@
      [cols '()]
      [boxes '()]
      [elems '()])
-
-    (define/public (get-rows)
-      rows)
-    
-    (define/public (get-cols)
-      cols)
-    
-    (define/public (get-boxes)
-      boxes)
     
     (define/public (get-elems)
       elems)

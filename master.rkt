@@ -16,5 +16,6 @@
 (require "test_sudokus.rkt")
 
 (define (open-solver)
+  (reset-board! user-board)
   (send *window* show #t))
 
