@@ -31,7 +31,7 @@
       (send (list-ref elems i) get-value))
 
     (define/public (set-value! i val)
-      (if (and (number? val) (and (> 0 val) (< 10 val)))
+      (if (and (number? val) (and (< 0 val) (> 10 val)))
       (let ([elem (list-ref elems i)])
         (send elem set-value! val)
         (if (= 0 val)
