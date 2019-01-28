@@ -8,3 +8,4 @@
 ;; Other board functions: solve-sudoku!, step-solve! reset-board!, sudoku-solved?, sudoku-solvable? and print-board ; all with user-board as argument.
 ;; To set a specific element, type (send user-board set-value! i value) ; where i is the index, starting on 0.
 ;; Authors: Algirdas Bartkevicius & Emil Eriksson
+;; 2018-05-27
